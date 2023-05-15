@@ -17,7 +17,6 @@ const getQuotes = async () => {
     // Open a new page
     const page = await browser.newPage();
 
-    // await page.setDefaultNavigationTimeout(0)
     await page.goto("https://www.engadget.com/news/", { waitUntil: "load", timeout: 0 });
 
     let results = [];
@@ -39,6 +38,7 @@ const getQuotes = async () => {
             const article = await getArticles(page);
 
             const insertData = {
+                date: article.date,
                 title: results[i].title,
                 content: results[i].content,
                 articles: article.article,
@@ -87,17 +87,25 @@ async function extractedEvaluateCall(page) {
 }
 
 async function getArticles(page) {
-    await page.waitForSelector('section[data-component="ArticleContainer"]')
+    await page.waitForSelector('div#module-article-container div.article-text')
 
     let article = '';
 
     try {
-        article = await page.$eval("section[data-component='ArticleContainer']", el => el.innerText);
+        article = await page.$eval("div#module-article-container div.article-text", el => el.innerText);
     } catch (e) {
 
     }
 
-    return { article }
+    let date = '';
+
+    try {
+        date = await page.$eval("div[data-component='HorizontalAuthorInfo'] span:last-child", el => el.innerText);
+    } catch (e) {
+
+    }
+
+    return { article, date }
 }
 
 // Start the scraping
